@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOND — Trading Bot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Gun barrel intro -->
+  <div id="gun-barrel">
+    <div class="barrel-circle"></div>
+    <div class="barrel-blood"></div>
+  </div>
+
+  <div id="app" class="hidden">
+
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <div class="logo">
+          <span class="logo-007">007</span>
+          <div class="logo-text">
+            <span class="logo-title">BOND</span>
+            <span class="logo-sub">TRADING BOT · LICENSED TO TRADE</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="mission-badge">
+          <span class="mission-label">MISSION STATUS</span>
+          <span id="mission-status" class="mission-value standby">STANDBY</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="clock-wrap">
+          <span class="clock-label">LOCAL TIME</span>
+          <span id="clock" class="clock-value">00:00:00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main grid -->
+    <main>
+
+      <!-- Left column: Portfolio + Controls -->
+      <aside class="panel panel-left">
+
+        <!-- Portfolio Value -->
+        <section class="card portfolio-card">
+          <div class="card-header">
+            <span class="card-icon">◈</span>
+            PORTFOLIO OVERVIEW
+          </div>
+          <div class="portfolio-total">
+            <span class="total-label">TOTAL VALUE</span>
+            <span id="total-value" class="total-amount">$100,000.00</span>
+          </div>
+          <div class="portfolio-row">
+            <div class="portfolio-stat">
+              <span class="stat-label">CASH</span>
+              <span id="cash-value" class="stat-value">$100,000.00</span>
+            </div>
+            <div class="portfolio-stat">
+              <span class="stat-label">P&amp;L</span>
+              <span id="pnl-value" class="stat-value neutral">$0.00</span>
+            </div>
+            <div class="portfolio-stat">
+              <span class="stat-label">RETURN</span>
+              <span id="pnl-pct" class="stat-value neutral">0.00%</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bot Control -->
+        <section class="card control-card">
+          <div class="card-header">
+            <span class="card-icon">⬡</span>
+            MISSION CONTROL
+          </div>
+          <div class="control-btns">
+            <button id="btn-start" class="btn btn-activate" onclick="startBot()">
+              <span class="btn-icon">▶</span> ACTIVATE AGENT
+            </button>
+            <button id="btn-stop" class="btn btn-abort" onclick="stopBot()" disabled>
+              <span class="btn-icon">■</span> ABORT MISSION
+            </button>
+          </div>
+          <div class="bot-stats">
+            <div class="bot-stat">
+              <span class="bstat-label">TICK</span>
+              <span id="tick-count" class="bstat-value">0</span>
+            </div>
+            <div class="bot-stat">
+              <span class="bstat-label">TRADES</span>
+              <span id="trade-count" class="bstat-value">0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Manual Trade -->
+        <section class="card trade-card">
+          <div class="card-header">
+            <span class="card-icon">◇</span>
+            MANUAL ORDER
+          </div>
+          <div class="trade-form">
+            <div class="form-row">
+              <label>ASSET</label>
+              <select id="trade-symbol" class="form-select">
+                <option value="">— SELECT —</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>ACTION</label>
+              <div class="toggle-group">
+                <button id="action-buy" class="toggle-btn active" onclick="setAction('BUY')">BUY</button>
+                <button id="action-sell" class="toggle-btn" onclick="setAction('SELL')">SELL</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>QUANTITY</label>
+              <input id="trade-qty" class="form-input" type="number" min="1" value="10" />
+            </div>
+            <button class="btn btn-execute" onclick="submitTrade()">
+              EXECUTE ORDER
+            </button>
+            <div id="trade-msg" class="trade-msg"></div>
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- Center: Chart + Holdings -->
+      <section class="panel panel-center">
+
+        <!-- Price Chart -->
+        <div class="card chart-card">
+          <div class="card-header chart-header">
+            <div>
+              <span class="card-icon">◈</span>
+              PRICE INTELLIGENCE
+            </div>
+            <div class="chart-asset-tabs" id="chart-tabs"></div>
+          </div>
+          <div class="chart-info-row">
+            <span id="chart-asset-name" class="chart-name">—</span>
+            <span id="chart-current-price" class="chart-price">—</span>
+            <span id="chart-change" class="chart-change neutral">—</span>
+          </div>
+          <canvas id="price-chart" width="800" height="240"></canvas>
+        </div>
+
+        <!-- Holdings Table -->
+        <div class="card holdings-card">
+          <div class="card-header">
+            <span class="card-icon">◇</span>
+            ACTIVE POSITIONS
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ASSET</th>
+                <th>PRICE</th>
+                <th>CHANGE</th>
+                <th>QTY</th>
+                <th>AVG COST</th>
+                <th>VALUE</th>
+                <th>P&amp;L</th>
+              </tr>
+            </thead>
+            <tbody id="holdings-body"></tbody>
+          </table>
+        </div>
+
+      </section>
+
+      <!-- Right column: Trade log -->
+      <aside class="panel panel-right">
+        <div class="card log-card">
+          <div class="card-header">
+            <span class="card-icon">⬡</span>
+            FIELD REPORTS
+          </div>
+          <div id="trade-log" class="trade-log"></div>
+        </div>
+      </aside>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
